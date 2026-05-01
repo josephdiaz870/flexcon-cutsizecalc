@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roll Material Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --blue-mid: #378ADD;
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --amber: #BA7517;
+    --amber-light: #FAEEDA;
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --teal: #0F6E56;
+    --teal-light: #E1F5EE;
+    --border: #E2E0D8;
+    --border-strong: #C8C6BC;
+    --bg: #F7F6F2;
+    --bg-card: #FFFFFF;
+    --bg-muted: #F1EFE8;
+    --text: #1A1917;
+    --text-secondary: #5F5E5A;
+    --text-tertiary: #888780;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: #FFFFFF;
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-header .logo img { height: 32px; width: auto; display: block; }
+  .header-badge {
+    font-size: 11px;
+    background: var(--bg-muted);
+    color: var(--text-secondary);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Nav tabs ── */
+  .nav-bar {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .nav-tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text-secondary); }
+  .nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+  /* ── Layout ── */
+  .app-body { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 1rem;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+  }
+
+  /* ── Master selector ── */
+  .master-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .master-btn {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .master-btn:hover { border-color: var(--blue-mid); }
+  .master-btn.active { border: 2px solid var(--blue); background: var(--blue-light); }
+  .master-btn .sz { font-size: 24px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .master-btn.active .sz { color: var(--blue); }
+  .master-btn .sl { font-size: 12px; color: var(--text-tertiary); margin-top: 2px; }
+  .master-btn.active .sl { color: var(--blue); }
+
+  /* ── Formula box ── */
+  .formula-box {
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 1.25rem;
+  }
+  .formula-box strong { color: var(--text); }
+
+  /* ── Table input ── */
+  .col-heads { display: grid; grid-template-columns: 56px 1fr 1fr 90px 28px; gap: 8px; margin-bottom: 6px; padding: 0 2px; }
+  .col-heads span { font-size: 11px; color: var(--text-tertiary); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .cut-row { display: grid; grid-template-columns: 56px 1fr 1fr 90px 28px; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .cut-row input {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    transition: border 0.15s;
+  }
+  .cut-row input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+  .cut-row input.err { border-color: #E24B4A; }
+  .cut-row input.qty-input { text-align: center; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .msi-live {
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .msi-live.empty { color: var(--text-tertiary); font-weight: 400; font-size: 12px; }
+  .remove-btn {
+    width: 28px; height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .remove-btn:hover { background: var(--red-light); border-color: #F09595; color: var(--red); }
+
+  /* ── Action row ── */
+  .action-row { display: flex; gap: 8px; margin-top: 0.5rem; }
+  .btn-outline {
+    font-size: 13px;
+    padding: 9px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-outline:hover { background: var(--bg-muted); border-color: var(--border-strong); }
+  .btn-primary {
+    flex: 1;
+    padding: 10px;
+    background: var(--blue);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover { background: #0C447C; }
+
+  /* ── Summary cards ── */
+  .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .scard { background: var(--bg-muted); border-radius: var(--radius); padding: 12px 14px; }
+  .scard .val { font-size: 20px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .scard .key { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .scard.c-blue .val { color: var(--blue); }
+  .scard.c-teal .val { color: var(--teal); }
+  .scard.c-green .val { color: var(--green); }
+  .scard.c-amber .val { color: var(--amber); }
+
+  /* ── Results table ── */
+  .results-card { display: none; }
+  .results-card.show { display: block; }
+  .results-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { font-size: 11px; font-weight: 600; color: var(--text-tertiary); text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+  tbody td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--bg-muted); }
+  .total-row td { font-weight: 600; background: var(--bg-muted) !important; border-top: 1px solid var(--border-strong); }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .badge.green { background: var(--green-light); color: var(--teal); }
+  .badge.amber { background: var(--amber-light); color: var(--amber); }
+  .badge.red { background: var(--red-light); color: var(--red); }
+  .mono { font-family: 'DM Mono', monospace; }
+  .waste-bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .waste-bar-bg { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; min-width: 40px; }
+  .waste-bar-fill { height: 100%; border-radius: 3px; }
+  .no-fit-row td { color: var(--red); background: var(--red-light) !important; }
+
+  /* ── Print / export ── */
+  .export-row { display: flex; gap: 8px; margin-top: 1rem; }
+
+  /* ── UOM Converter ── */
+  .uom-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .uom-tab {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--bg-muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .uom-tab:hover { border-color: var(--blue-mid); color: var(--blue); }
+  .uom-tab.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  .uom-conv { display: none; }
+  .uom-conv.show { display: block; }
+
+  .conv-row { display: grid; grid-template-columns: 1fr 52px 1fr; align-items: center; gap: 12px; margin-bottom: 1rem; }
+  .conv-box {
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+  .conv-box label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-tertiary); display: block; margin-bottom: 8px; }
+  .conv-box input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+  }
+  .conv-box input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,95,165,0.1); }
+  .conv-box .unit-name { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+
+  .flip-btn {
+    width: 52px; height: 52px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg-card);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary);
+    font-size: 20px;
+    transition: all 0.2s;
+    align-self: center;
+    flex-shrink: 0;
+  }
+  .flip-btn:hover { background: var(--blue-light); border-color: var(--blue); color: var(--blue); transform: rotate(180deg); }
+
+  .ref-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 1rem; }
+  .ref-card { background: var(--bg-muted); border-radius: var(--radius); padding: 9px 12px; border: 1px solid var(--border); }
+  .ref-card .rf { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .ref-card .rt { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; font-family: 'DM Mono', monospace; }
+  .ref-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 8px; margin-top: 1.25rem; }
+
+  /* ── Print styles ── */
+  @media print {
+    .app-header, .nav-bar, .action-row, .export-row, .uom-tabs { display: none !important; }
+    .page { display: block !important; }
+    .uom-conv { display: block !important; }
+    body { background: #fff; }
+    .card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+  }
+
+  @media (max-width: 600px) {
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .ref-grid { grid-template-columns: 1fr 1fr; }
+    .app-body { padding: 1rem 1rem 3rem; }
+    .col-heads, .cut-row { grid-template-columns: 48px 1fr 1fr 80px 28px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo"><img src="data:image/png;base64,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" alt="Flexcon" style="height:32px;width:auto;display:block;"></div>
+  <div class="header-badge">Roll Material Calculator</div>
+</header>
+
+<nav class="nav-bar">
+  <button class="nav-tab active" onclick="showPage('calc', this)">PO Calculator</button>
+  <button class="nav-tab" onclick="showPage('uom', this)">UOM Converter</button>
+</nav>
+
+<div class="app-body">
+
+  <!-- ════════════════════════════════
+       PAGE 1: PO CALCULATOR
+  ════════════════════════════════ -->
+  <div class="page active" id="page-calc">
+
+    <!-- Master roll selector -->
+    <div class="card">
+      <div class="card-title">Master roll width</div>
+      <div class="master-grid">
+        <button class="master-btn active" onclick="selectMaster(60, this)">
+          <div class="sz">60"</div>
+          <div class="sl">Standard master</div>
+        </button>
+        <button class="master-btn" onclick="selectMaster(54, this)">
+          <div class="sz">54"</div>
+          <div class="sl">Narrow master</div>
+        </button>
+        <button class="master-btn" onclick="selectMaster(76, this)">
+          <div class="sz">76"</div>
+          <div class="sl">Wide master</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- PO Line Items -->
+    <div class="card">
+      <div class="card-title">PO line items</div>
+      <div class="formula-box">MSI = Width (in) × 12 × Length (ft) ÷ 1,000 &nbsp;·&nbsp; e.g. 12" × 12 × 5,000 ft ÷ 1,000 = <strong>720 MSI</strong></div>
+      <div class="col-heads">
+        <span>Qty</span>
+        <span>Width (in)</span>
+        <span>Length (ft)</span>
+        <span>MSI</span>
+        <span></span>
+      </div>
+      <div id="cuts-container"></div>
+      <div class="action-row">
+        <button class="btn-outline" onclick="addRow()">+ Add line</button>
+        <button class="btn-primary" onclick="calculate()">Calculate PO</button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card results-card" id="results-card">
+      <div class="results-title" id="results-title"></div>
+      <div class="summary-grid" id="summary-grid"></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Qty</th>
+              <th>Cut size</th>
+              <th>MSI</th>
+              <th>Cuts across</th>
+              <th>Waste</th>
+              <th>Efficiency</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="result-body"></tbody>
+        </table>
+      </div>
+      <div class="export-row">
+        <button class="btn-outline" onclick="window.print()">🖨 Print / Save PDF</button>
+        <button class="btn-outline" onclick="copyResults()">📋 Copy to clipboard</button>
+      </div>
+    </div>
+
+  </div><!-- /page-calc -->
+
+
+  <!-- ════════════════════════════════
+       PAGE 2: UOM CONVERTER
+  ════════════════════════════════ -->
+  <div class="page" id="page-uom">
+    <div class="card">
+      <div class="card-title">Unit of measure converter</div>
+
+      <div class="uom-tabs">
+        <button class="uom-tab active" onclick="showUom('msi-sqm', this)">MSI ↔ SQM</button>
+        <button class="uom-tab" onclick="showUom('lf-lyd', this)">LF ↔ LYD</button>
+        <button class="uom-tab" onclick="showUom('lf-lm', this)">LF ↔ LM</button>
+        <button class="uom-tab" onclick="showUom('sqf-sqm', this)">SQF ↔ SQM</button>
+      </div>
+
+      <!-- MSI ↔ SQM -->
+      <div class="uom-conv show" id="uom-msi-sqm">
+        <div class="formula-box">1 MSI = <strong>0.64516 SQM</strong> &nbsp;·&nbsp; 1 SQM = <strong>1.55000 MSI</strong></div>
+        <div class="conv-row">
+          <div class="conv-box">
+            <label>MSI</label>
+            <input type="number" min="0" step="any" placeholder="0" id="msi-a" oninput="cvt('msi-sqm','a')">
+            <div class="unit-name">thousand square inches</div>
+          </div>
+          <button class="flip-btn" onclick="flip('msi-sqm')">⇄</button>
+          <div class="conv-box">
+            <label>SQM</label>
+            <input type="number" min="0" step="any" placeholder="0" id="sqm-a" oninput="cvt('msi-sqm','b')">
+            <div class="unit-name">square meters</div>
+          </div>
+        </div>
+        <div class="ref-title">Quick reference</div>
+        <div class="ref-grid" id="ref-msi-sqm"></div>
+      </div>
+
+      <!-- LF ↔ LYD -->
+      <div class="uom-conv" id="uom-lf-lyd">
+        <div class="formula-box">1 LF = <strong>0.33333 LYD</strong> &nbsp;·&nbsp; 1 LYD = <strong>3.00000 LF</strong></div>
+        <div class="conv-row">
+          <div class="conv-box">
+            <label>Linear Feet (LF)</label>
+            <input type="number" min="0" step="any" placeholder="0" id="lf-a" oninput="cvt('lf-lyd','a')">
+            <div class="unit-name">linear feet</div>
+          </div>
+          <button class="flip-btn" onclick="flip('lf-lyd')">⇄</button>
+          <div class="conv-box">
+            <label>Linear Yards (LYD)</label>
+            <input type="number" min="0" step="any" placeholder="0" id="lyd-a" oninput="cvt('lf-lyd','b')">
+            <div class="unit-name">linear yards</div>
+          </div>
+        </div>
+        <div class="ref-title">Quick reference</div>
+        <div class="ref-grid" id="ref-lf-lyd"></div>
+      </div>
+
+      <!-- LF ↔ LM -->
+      <div class="uom-conv" id="uom-lf-lm">
+        <div class="formula-box">1 LF = <strong>0.30480 LM</strong> &nbsp;·&nbsp; 1 LM = <strong>3.28084 LF</strong></div>
+        <div class="conv-row">
+          <div class="conv-box">
+            <label>Linear Feet (LF)</label>
+            <input type="number" min="0" step="any" placeholder="0" id="lf-b" oninput="cvt('lf-lm','a')">
+            <div class="unit-name">linear feet</div>
+          </div>
+          <button class="flip-btn" onclick="flip('lf-lm')">⇄</button>
+          <div class="conv-box">
+            <label>Linear Meters (LM)</label>
+            <input type="number" min="0" step="any" placeholder="0" id="lm-a" oninput="cvt('lf-lm','b')">
+            <div class="unit-name">linear meters</div>
+          </div>
+        </div>
+        <div class="ref-title">Quick reference</div>
+        <div class="ref-grid" id="ref-lf-lm"></div>
+      </div>
+
+      <!-- SQF ↔ SQM -->
+      <div class="uom-conv" id="uom-sqf-sqm">
+        <div class="formula-box">1 SQF = <strong>0.09290 SQM</strong> &nbsp;·&nbsp; 1 SQM = <strong>10.76391 SQF</strong></div>
+        <div class="conv-row">
+          <div class="conv-box">
+            <label>Square Feet (SQF)</label>
+            <input type="number" min="0" step="any" placeholder="0" id="sqf-a" oninput="cvt('sqf-sqm','a')">
+            <div class="unit-name">square feet</div>
+          </div>
+          <button class="flip-btn" onclick="flip('sqf-sqm')">⇄</button>
+          <div class="conv-box">
+            <label>Square Meters (SQM)</label>
+            <input type="number" min="0" step="any" placeholder="0" id="sqm-b" oninput="cvt('sqf-sqm','b')">
+            <div class="unit-name">square meters</div>
+          </div>
+        </div>
+        <div class="ref-title">Quick reference</div>
+        <div class="ref-grid" id="ref-sqf-sqm"></div>
+      </div>
+
+    </div>
+  </div><!-- /page-uom -->
+
+</div><!-- /app-body -->
+
+<script>
+// ── Navigation ──────────────────────────────────────
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Calculator ───────────────────────────────────────
+let masterWidth = 60;
+let rowId = 0;
+
+function selectMaster(w, el) {
+  masterWidth = w;
+  document.querySelectorAll('.master-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('results-card').classList.remove('show');
+}
+
+function calcMsi(qty, w, lFt) {
+  return (w * 12 * lFt) / 1000 * qty;
+}
+
+function updateMsi(id) {
+  const qty = parseFloat(document.getElementById('qty-' + id).value) || 0;
+  const w   = parseFloat(document.getElementById('w-' + id).value)   || 0;
+  const l   = parseFloat(document.getElementById('l-' + id).value)   || 0;
+  const el  = document.getElementById('msi-' + id);
+  if (qty > 0 && w > 0 && l > 0) {
+    el.textContent = calcMsi(qty, w, l).toFixed(2);
+    el.classList.remove('empty');
+  } else {
+    el.textContent = '—';
+    el.classList.add('empty');
+  }
+}
+
+function addRow(qty, width, length) {
+  rowId++;
+  const id = rowId;
+  const div = document.createElement('div');
+  div.className = 'cut-row';
+  div.id = 'row-' + id;
+  div.innerHTML = `
+    <input type="number" class="qty-input" min="1" step="1" placeholder="1" id="qty-${id}" value="${qty||''}" oninput="updateMsi(${id})">
+    <input type="number" min="0.1" step="0.01" placeholder='e.g. 15"' id="w-${id}" value="${width||''}" oninput="updateMsi(${id})">
+    <input type="number" min="0.1" step="0.01" placeholder="e.g. 500" id="l-${id}" value="${length||''}" oninput="updateMsi(${id})">
+    <div class="msi-live empty" id="msi-${id}">—</div>
+    <button class="remove-btn" onclick="removeRow(${id})">×</button>
+  `;
+  document.getElementById('cuts-container').appendChild(div);
+  if (qty && width && length) updateMsi(id);
+}
+
+function removeRow(id) {
+  const el = document.getElementById('row-' + id);
+  if (el) el.remove();
+  document.getElementById('results-card').classList.remove('show');
+}
+
+function fmt4(n) { return parseFloat(n.toFixed(4)).toString(); }
+
+function calculate() {
+  const rows = document.querySelectorAll('.cut-row');
+  if (!rows.length) return;
+
+  let bodyHtml = '';
+  let totalPieces = 0, totalMsi = 0, totalCuts = 0, totalWaste = 0, validCount = 0;
+
+  rows.forEach(row => {
+    const id  = row.id.replace('row-', '');
+    const qEl = document.getElementById('qty-' + id);
+    const wEl = document.getElementById('w-' + id);
+    const lEl = document.getElementById('l-' + id);
+    [qEl, wEl, lEl].forEach(e => e.classList.remove('err'));
+
+    const qty = parseInt(qEl.value) || 1;
+    const w   = parseFloat(wEl.value);
+    const l   = parseFloat(lEl.value);
+    let err = false;
+    if (!w || w <= 0) { wEl.classList.add('err'); err = true; }
+    if (!l || l <= 0) { lEl.classList.add('err'); err = true; }
+    if (err) return;
+
+    validCount++;
+    const lineMsi    = calcMsi(qty, w, l);
+    const fits       = Math.floor(masterWidth / w);
+    const usedWidth  = fits * w;
+    const wasteWidth = masterWidth - usedWidth;
+    const wastePct   = (wasteWidth / masterWidth) * 100;
+
+    totalPieces += qty;
+    totalMsi    += lineMsi;
+
+    if (fits === 0) {
+      bodyHtml += `<tr class="no-fit-row">
+        <td class="mono">${qty}</td>
+        <td>${w}" × ${l} ft</td>
+        <td class="mono">${lineMsi.toFixed(2)}</td>
+        <td colspan="4">Width ${w}" exceeds master ${masterWidth}" — does not fit</td>
+      </tr>`;
+      return;
+    }
+
+    totalCuts  += fits;
+    totalWaste += wastePct;
+    const wColor = wastePct < 5 ? '#1D9E75' : wastePct < 15 ? '#EF9F27' : '#E24B4A';
+    const bClass = wastePct < 5 ? 'green' : wastePct < 15 ? 'amber' : 'red';
+    const bLabel = wastePct < 5 ? 'Excellent' : wastePct < 15 ? 'Good' : 'High waste';
+
+    bodyHtml += `<tr>
+      <td class="mono" style="font-weight:600">${qty}</td>
+      <td>${w}" × ${l} ft</td>
+      <td class="mono" style="color:var(--blue);font-weight:600">${lineMsi.toFixed(2)}</td>
+      <td class="mono" style="font-weight:600">${fits}</td>
+      <td>
+        <div class="waste-bar-wrap">
+          <span class="mono" style="min-width:30px;font-size:12px;color:var(--text-tertiary)">${wasteWidth.toFixed(1)}"</span>
+          <div class="waste-bar-bg"><div class="waste-bar-fill" style="width:${(100-wastePct).toFixed(1)}%;background:${wColor}"></div></div>
+          <span class="mono" style="min-width:36px;font-size:12px;color:var(--text-tertiary)">${wastePct.toFixed(1)}%</span>
+        </div>
+      </td>
+      <td><span class="badge ${bClass}">${bLabel}</span></td>
+      <td style="color:var(--green);font-weight:600">✓ Fits</td>
+    </tr>`;
+  });
+
+  if (validCount === 0) return;
+
+  const avgWaste = totalWaste / validCount;
+  bodyHtml += `<tr class="total-row">
+    <td class="mono">${totalPieces}</td>
+    <td style="color:var(--text-tertiary)">Total</td>
+    <td class="mono" style="color:var(--blue)">${totalMsi.toFixed(2)}</td>
+    <td class="mono">${totalCuts}</td>
+    <td colspan="3" style="color:var(--text-tertiary);font-size:12px">Avg waste: ${avgWaste.toFixed(1)}%</td>
+  </tr>`;
+
+  const awClass = avgWaste < 5 ? 'c-green' : avgWaste < 15 ? 'c-amber' : 'c-amber';
+  document.getElementById('summary-grid').innerHTML = `
+    <div class="scard c-blue"><div class="val">${totalPieces}</div><div class="key">Total pieces</div></div>
+    <div class="scard c-teal"><div class="val">${totalMsi.toFixed(2)}</div><div class="key">Total MSI</div></div>
+    <div class="scard c-blue"><div class="val">${totalCuts}</div><div class="key">Cuts across master</div></div>
+    <div class="scard ${awClass}"><div class="val">${avgWaste.toFixed(1)}%</div><div class="key">Avg waste</div></div>
+  `;
+  document.getElementById('results-title').textContent = `Results — ${masterWidth}" master roll`;
+  document.getElementById('result-body').innerHTML = bodyHtml;
+  document.getElementById('results-card').classList.add('show');
+  document.getElementById('results-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyResults() {
+  const rows = document.querySelectorAll('#result-body tr');
+  let text = `PO Results — ${masterWidth}" Master Roll\n`;
+  text += 'Qty\tCut Size\tMSI\tCuts Across\tWaste\n';
+  rows.forEach(r => {
+    const cells = r.querySelectorAll('td');
+    if (cells.length >= 4) {
+      text += Array.from(cells).slice(0,5).map(c => c.innerText.replace(/\n/g,' ').trim()).join('\t') + '\n';
+    }
+  });
+  navigator.clipboard.writeText(text).then(() => alert('Results copied to clipboard!'));
+}
+
+// Default rows
+addRow(2, 15, 500);
+addRow(1, 9, 500);
+addRow(3, 10, 500);
+
+
+// ── UOM Converter ────────────────────────────────────
+const CONVERSIONS = {
+  'msi-sqm': { factor: 0.64516,      aId: 'msi-a',  bId: 'sqm-a' },
+  'lf-lyd':  { factor: 1/3,          aId: 'lf-a',   bId: 'lyd-a' },
+  'lf-lm':   { factor: 0.3048,       aId: 'lf-b',   bId: 'lm-a'  },
+  'sqf-sqm': { factor: 0.09290304,   aId: 'sqf-a',  bId: 'sqm-b' },
+};
+
+function showUom(id, el) {
+  document.querySelectorAll('.uom-conv').forEach(c => c.classList.remove('show'));
+  document.querySelectorAll('.uom-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('uom-' + id).classList.add('show');
+  el.classList.add('active');
+}
+
+function cvt(key, dir) {
+  const { factor, aId, bId } = CONVERSIONS[key];
+  if (dir === 'a') {
+    const v = parseFloat(document.getElementById(aId).value);
+    document.getElementById(bId).value = isNaN(v) ? '' : fmt4(v * factor);
+  } else {
+    const v = parseFloat(document.getElementById(bId).value);
+    document.getElementById(aId).value = isNaN(v) ? '' : fmt4(v / factor);
+  }
+}
+
+function flip(key) {
+  const { aId, bId } = CONVERSIONS[key];
+  const a = document.getElementById(aId).value;
+  const b = document.getElementById(bId).value;
+  document.getElementById(aId).value = b;
+  document.getElementById(bId).value = a;
+  if (b) cvt(key, 'a');
+}
+
+// Quick reference tables
+function buildRef(containerId, vals, fromLabel, toLabel, factor) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = vals.map(v => `
+    <div class="ref-card">
+      <div class="rf">${v.toLocaleString()} ${fromLabel}</div>
+      <div class="rt">= ${fmt4(v * factor)} ${toLabel}</div>
+    </div>`).join('');
+}
+
+buildRef('ref-msi-sqm', [100, 500, 1000, 2500, 5000, 10000], 'MSI', 'SQM', 0.64516);
+buildRef('ref-lf-lyd',  [100, 300, 500, 1000, 3000, 5000],   'LF',  'LYD', 1/3);
+buildRef('ref-lf-lm',   [100, 300, 500, 1000, 3000, 5000],   'LF',  'LM',  0.3048);
+buildRef('ref-sqf-sqm', [100, 500, 1000, 2500, 5000, 10000], 'SQF', 'SQM', 0.09290304);
+</script>
+</body>
+</html>
